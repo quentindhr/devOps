@@ -22,9 +22,47 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '21'
-          distribution: 'temurin'  # Distribution OpenJDK
-          cache: 'maven'  # Cache les dépendances Maven pour accélérer les builds
+          distribution: 'temurin'
+          cache: 'maven'
 
       # Étape 3: Build et test avec Maven
       - name: Build and test with Maven
         run: mvn clean verify --file ./Java/pom.xml
+
+  # Job pour build et push des images Docker
+  build-and-push-docker-image:
+    needs: test-backend  # Attend que les tests passent avant de builder les images
+    runs-on: ubuntu-24.04
+
+    steps:
+      # Étape 1: Récupère le code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Étape 2: Login à Docker Hub
+      - name: Login to DockerHub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+      # Étape 3: Build et push l'image backend
+      - name: Build image and push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./Java  # Chemin vers le Dockerfile du backend
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/devops-backend:latest
+          push: ${{ github.ref == 'refs/heads/main' }}  # Push seulement sur main
+
+      # Étape 4: Build et push l'image database
+      - name: Build image and push database
+        uses: docker/build-push-action@v6
+        with:
+          context: ./Java/db  # Chemin vers le Dockerfile de la database
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/devops-database:latest
+          push: ${{ github.ref == 'refs/heads/main' }}  # Push seulement sur main
+
+      # Étape 5: Build et push l'image httpd
+      - name: Build image and push httpd
+        uses: docker/build-push-action@v6
+        with:
+          context: ./httpd  # Chemin vers le Dockerfile du reverse proxy
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/devops-httpd:latest
+          push: ${{ github.ref == 'refs/heads/main' }}  # Push seulement sur main
