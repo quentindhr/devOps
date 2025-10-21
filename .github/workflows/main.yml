@@ -29,9 +29,22 @@ jobs:
       - name: Build and test with Maven
         run: mvn clean verify --file ./Java/pom.xml
 
+      # Étape 4: Analyse de la qualité du code avec SonarCloud
+      - name: SonarCloud Scan
+        run: |
+          mvn -B verify sonar:sonar \
+            -Dsonar.projectKey=quentindhr_devops \
+            -Dsonar.organization=quentindhr\
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            --file ./Java/pom.xml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Nécessaire pour obtenir les informations PR
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
   # Job pour build et push des images Docker
   build-and-push-docker-image:
-    needs: test-backend  # Attend que les tests passent avant de builder les images
+    needs: test-backend  # Attend que les tests et SonarCloud passent
     runs-on: ubuntu-24.04
 
     steps:
