@@ -1,0 +1,30 @@
+name: CI devops 2025
+
+on:
+  # Déclenche le workflow sur push vers main et develop
+  push:
+    branches:
+      - main
+      - develop
+  # Et aussi sur les pull requests
+  pull_request:
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-24.04
+    steps:
+      # Étape 1: Récupère le code du repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Étape 2: Configure JDK 21 pour Maven
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'  # Distribution OpenJDK
+          cache: 'maven'  # Cache les dépendances Maven pour accélérer les builds
+
+      # Étape 3: Build et test avec Maven
+      - name: Build and test with Maven
+        run: mvn clean verify --file ./Java/pom.xml
