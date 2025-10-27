@@ -37,7 +37,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-  build-and-push-docker-image:
+    build-and-push-docker-image:
     needs: test-backend
     runs-on: ubuntu-24.04
 
@@ -67,6 +67,13 @@ jobs:
         with:
           context: ./httpd
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/devops-httpd:latest
+          push: ${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build image and push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./front
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/devops-frontend:latest
           push: ${{ github.ref == 'refs/heads/main' }}
 
   deploy:
