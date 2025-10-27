@@ -37,7 +37,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-    build-and-push-docker-image:
+  build-and-push-docker-image:
     needs: test-backend
     runs-on: ubuntu-24.04
 
