@@ -1,7 +1,6 @@
 ---
 # tasks file for docker
 
-# Install prerequisites for Docker
 - name: Install required packages
   apt:
     name:
@@ -10,33 +9,39 @@
       - curl
       - gnupg
       - lsb-release
-      - python3-pip
-      - python3-docker
-    state: latest
+    state: present
     update_cache: yes
 
-# Add Docker's official GPG key
 - name: Add Docker GPG key
   apt_key:
     url: https://download.docker.com/linux/debian/gpg
     state: present
 
-# Set up the Docker stable repository
-- name: Add Docker APT repository
+- name: Add Docker repository
   apt_repository:
-    repo: "deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_facts['distribution_release'] }} stable"
+    repo: deb https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable
+    state: present
+
+- name: Install Docker
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
     state: present
     update_cache: yes
 
-# Install Docker
-- name: Install Docker
-  apt:
-    name: docker-ce
-    state: present
-
-# Ensure Docker is running
-- name: Make sure Docker is running
-  service:
+- name: Start and enable Docker service
+  systemd:
     name: docker
     state: started
     enabled: yes
+
+- name: Add admin user to docker group
+  user:
+    name: admin
+    groups: docker
+    append: yes
+
+- name: Reset SSH connection to apply group changes
+  meta: reset_connection
