@@ -1,0 +1,15 @@
+---
+# tasks file for proxy
+
+- name: Run HTTPD reverse proxy container
+  community.docker.docker_container:
+    name: httpd
+    image: quentindhr/devops-httpd:latest
+    state: started
+    restart_policy: always
+    networks:
+      - name: app-network
+    ports:
+      - "80:80"
+  vars:
+    ansible_python_interpreter: /usr/bin/python3

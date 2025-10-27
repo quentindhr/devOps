@@ -1,0 +1,17 @@
+---
+# tasks file for database
+
+- name: Run PostgreSQL container
+  community.docker.docker_container:
+    name: database
+    image: quentindhr/devops-database:latest
+    state: started
+    restart_policy: always
+    networks:
+      - name: app-network
+    env:
+      POSTGRES_DB: db
+      POSTGRES_USER: usr
+      POSTGRES_PASSWORD: pwd
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
