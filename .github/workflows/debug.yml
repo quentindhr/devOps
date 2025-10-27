@@ -1,0 +1,30 @@
+name: Debug Server
+
+on:
+  workflow_dispatch:
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.ANSIBLE_HOST }} >> ~/.ssh/known_hosts
+      
+      - name: Check running containers
+        run: |
+          ssh -i ~/.ssh/id_rsa admin@${{ secrets.ANSIBLE_HOST }} "docker ps"
+      
+      - name: Check frontend logs
+        run: |
+          ssh -i ~/.ssh/id_rsa admin@${{ secrets.ANSIBLE_HOST }} "docker logs frontend || echo 'Frontend container not running'"
+      
+      - name: Check httpd logs
+        run: |
+          ssh -i ~/.ssh/id_rsa admin@${{ secrets.ANSIBLE_HOST }} "docker logs httpd"
