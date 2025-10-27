@@ -1,0 +1,19 @@
+name: Restart HTTPD
+
+on:
+  workflow_dispatch:
+
+jobs:
+  restart:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.ANSIBLE_HOST }} >> ~/.ssh/known_hosts
+      
+      - name: Restart httpd container
+        run: |
+          ssh -i ~/.ssh/id_rsa admin@${{ secrets.ANSIBLE_HOST }} "docker restart httpd"
