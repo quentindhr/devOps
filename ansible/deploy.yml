@@ -1,0 +1,17 @@
+- name: Déploiement de base sur prod
+  hosts: prod
+  become: true
+  tasks:
+    - name: Vérifier la distribution (display)
+      ansible.builtin.debug:
+        msg: "OS: {{ ansible_facts['os_family'] }} - {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}"
+
+    - name: Mettre à jour apt cache si Debian/Ubuntu
+      ansible.builtin.apt:
+        update_cache: yes
+      when: ansible_facts['os_family'] == 'Debian'
+
+    - name: Installer nginx (exemple)
+      ansible.builtin.package:
+        name: nginx
+        state: present
