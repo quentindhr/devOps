@@ -1,0 +1,23 @@
+name: Check HTTPD Config
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.ANSIBLE_HOST }} >> ~/.ssh/known_hosts
+      
+      - name: Show httpd.conf inside running container
+        run: |
+          ssh -i ~/.ssh/id_rsa admin@${{ secrets.ANSIBLE_HOST }} "docker exec httpd cat /usr/local/apache2/conf/httpd.conf"
+      
+      - name: Test what httpd serves
+        run: |
+          ssh -i ~/.ssh/id_rsa admin@${{ secrets.ANSIBLE_HOST }} "curl -s http://localhost/"
